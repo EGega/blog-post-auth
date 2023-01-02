@@ -5,7 +5,7 @@ from rest_framework.response import Response
 from .models import Post, Category
 from .serializers import PostSerializer, CategorySerializer
 from .pagination import CustomizedPagination
-from rest_framework.permissions import IsAuthenticatedOrReadOnly
+from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAdminUser, BasePermission, SAFE_METHODS
 
 from rest_framework.filters import SearchFilter, OrderingFilter
 
@@ -14,6 +14,8 @@ from rest_framework.filters import SearchFilter, OrderingFilter
 @api_view(['GET'])
 def home_rest(request):
   return Response({'message': "This is the home page"})
+
+
 
 
 class PostMVS(ModelViewSet):
@@ -26,6 +28,11 @@ class PostMVS(ModelViewSet):
   search_fields = ['title', 'content', 'status', ]
 
 
+
+class ReadOnly(BasePermission):
+    def has_permission(self, request, view):
+        return request.method in SAFE_METHODS
+
 class CategoryMVS(ModelViewSet):
   
   queryset = Category.objects.all()
@@ -33,3 +40,4 @@ class CategoryMVS(ModelViewSet):
   pagination_class = CustomizedPagination
   filter_backends = [SearchFilter, OrderingFilter]
   search_fields = ['category_name', 'id']
+  permission_classes = [IsAdminUser | ReadOnly]
